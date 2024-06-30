@@ -56,6 +56,12 @@ class ActionInputs {
     get NoZip() {
         return Boolean(core.getInput('no-zip', { required: false }));
     }
+    get UploadPath() {
+        return core.getInput('upload-path', { required: false });
+    }
+    get UploadRoot() {
+        return core.getInput('upload-root', { required: false }) || 'artifacts';
+    }
     get NoFileBehvaior() {
         const notFoundAction = core.getInput('if-no-files-found', { required: false }) || NoFileOption_1.NoFileOption.warn;
         const noFileBehavior = NoFileOption_1.NoFileOption[notFoundAction];
@@ -383,7 +389,7 @@ class NextcloudArtifact {
             },
             ...github.context.repo
         });
-        const client = new NextcloudClient_1.NextcloudClient(this.inputs.Endpoint, this.name, files.rootDirectory, this.inputs.Username, this.inputs.Password, this.inputs.NoZip);
+        const client = new NextcloudClient_1.NextcloudClient(this.inputs.Endpoint, this.name, files.rootDirectory, this.inputs.Username, this.inputs.Password, this.inputs.NoZip, this.inputs.UploadPath, this.inputs.UploadRoot);
         try {
             const shareableUrl = await client.uploadFiles(files.filesToUpload);
             core.setOutput('SHAREABLE_URL', shareableUrl);
@@ -501,13 +507,15 @@ const uuid_1 = __nccwpck_require__(5650);
 const webdav = __importStar(__nccwpck_require__(4561));
 const fs = fsSync.promises;
 class NextcloudClient {
-    constructor(endpoint, artifact, rootDirectory, username, password, nozip) {
+    constructor(endpoint, artifact, rootDirectory, username, password, nozip, uploadPath, uploadRoot) {
         this.endpoint = endpoint;
         this.artifact = artifact;
         this.rootDirectory = rootDirectory;
         this.username = username;
         this.password = password;
         this.nozip = nozip;
+        this.uploadPath = uploadPath;
+        this.uploadRoot = uploadRoot;
         this.guid = (0, uuid_1.v4)();
         this.headers = { Authorization: 'Basic ' + Buffer.from(`${this.username}:${this.password}`).toString('base64') };
         this.davClient = webdav.createClient(`${this.endpoint.href}remote.php/dav/files/${this.username}`, {
@@ -536,7 +544,9 @@ class NextcloudClient {
             return await this.shareFile(filePath);
         }
         finally {
-            await fs.unlink(zip);
+            // Don't delete user-made files
+            if (!this.nozip)
+                await fs.unlink(zip);
         }
     }
     uploadSpec(files) {
@@ -572,7 +582,7 @@ class NextcloudClient {
         return specifications;
     }
     async zipFiles(specs) {
-        const tempArtifactDir = path.join(os.tmpdir(), this.guid);
+        const tempArtifactDir = path.join(os.tmpdir(), this.uploadPath || this.guid);
         const artifactPath = path.join(tempArtifactDir, `artifact-${this.artifact}`);
         await fs.mkdir(path.join(artifactPath, this.artifact), { recursive: true });
         const copies = [];
@@ -599,7 +609,7 @@ class NextcloudClient {
         });
     }
     async upload(file) {
-        const remoteFileDir = `/artifacts/${this.guid}`;
+        const remoteFileDir = `/${this.uploadRoot}/${this.uploadPath || this.guid}`;
         if (!(await this.davClient.exists(remoteFileDir))) {
             await this.davClient.createDirectory(remoteFileDir, { recursive: true });
         }
