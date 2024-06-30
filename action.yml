@@ -6,16 +6,22 @@ inputs:
     description: 'Artifact name'
     default: 'artifact'
   path:
-    description: 'A file, directory or wildcard pattern that describes what to upload'
+    description: 'A file, directory or wildcard pattern that describes what to upload.'
     required: true
+  upload-root:
+    description: 'A root directory path to upload to on the server. Defaults to 'artifacts'.'
+    required: false
+  upload-path:
+    description: 'A directory path to upload to on the server, after root. Defaults to a random uuid.'
+    required: false
   nextcloud-url:
-    description: 'The URL for the nextcloud server'
+    description: 'The URL for the nextcloud server.'
     required: true
   nextcloud-username:
-    description: 'The username for the nextcloud user'
+    description: 'The username for the nextcloud user.'
     required: true
   nextcloud-password:
-    description: 'The password for the nextcloud user'
+    description: 'The password for the nextcloud user.'
     required: true
   no-zip:
     description: 'Whether to zip files. Incompatible with uploading multiple files.'

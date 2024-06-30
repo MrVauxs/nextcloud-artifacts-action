@@ -17,4 +17,8 @@ export interface Inputs {
   readonly NoFileBehvaior: NoFileOption
 
   readonly NoZip: boolean
+
+  readonly UploadPath: string
+
+  readonly UploadRoot: string
 }

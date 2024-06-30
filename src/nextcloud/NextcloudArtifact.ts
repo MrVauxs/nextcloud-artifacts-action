@@ -79,7 +79,9 @@ export class NextcloudArtifact {
       files.rootDirectory,
       this.inputs.Username,
       this.inputs.Password,
-      this.inputs.NoZip
+      this.inputs.NoZip,
+      this.inputs.UploadPath,
+      this.inputs.UploadRoot
     )
 
     try {

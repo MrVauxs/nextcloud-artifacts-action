@@ -32,6 +32,14 @@ export class ActionInputs implements Inputs {
     return Boolean(core.getInput('no-zip', { required: false }))
   }
 
+  get UploadPath(): string {
+    return core.getInput('upload-path', { required: false })
+  }
+
+  get UploadRoot(): string {
+    return core.getInput('upload-root', { required: false }) || 'artifacts'
+  }
+
   get NoFileBehvaior(): NoFileOption {
     const notFoundAction = core.getInput('if-no-files-found', { required: false }) || NoFileOption.warn
     const noFileBehavior: NoFileOption = NoFileOption[notFoundAction as keyof typeof NoFileOption]

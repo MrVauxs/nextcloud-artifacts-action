@@ -26,7 +26,9 @@ export class NextcloudClient {
     private rootDirectory: string,
     private username: string,
     private password: string,
-    private nozip: boolean
+    private nozip: boolean,
+    private uploadPath: string,
+    private uploadRoot: string,
   ) {
     this.guid = uuidv4()
     this.headers = { Authorization: 'Basic ' + Buffer.from(`${this.username}:${this.password}`).toString('base64') }
@@ -95,7 +97,7 @@ export class NextcloudClient {
   }
 
   private async zipFiles(specs: FileSpec[]): Promise<string> {
-    const tempArtifactDir = path.join(os.tmpdir(), this.guid)
+    const tempArtifactDir = path.join(os.tmpdir(), this.uploadPath || this.guid)
     const artifactPath = path.join(tempArtifactDir, `artifact-${this.artifact}`)
     await fs.mkdir(path.join(artifactPath, this.artifact), { recursive: true })
     const copies = []
@@ -130,7 +132,7 @@ export class NextcloudClient {
   }
 
   private async upload(file: string): Promise<string> {
-    const remoteFileDir = `/artifacts/${this.guid}`
+    const remoteFileDir = `/${this.uploadRoot}/${this.uploadPath || this.guid}`
     if (!(await this.davClient.exists(remoteFileDir))) {
       await this.davClient.createDirectory(remoteFileDir, { recursive: true })
     }
